@@ -1,0 +1,34 @@
+[project]
+name = "milo-codexdev"
+version = "0.1.0"
+description = "Minimal Input Life Organizer"
+authors = [
+    {name = "Rami Guzlan"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+]
+
+# This section is for Poetry's specific configuration
+[tool.poetry]
+name = "milo-codexdev" # Should match [project].name
+version = "0.1.0" # Should match [project].version
+description = "Minimal Input Life Organizer" # Should match [project].description
+authors = ["Rami Guzlan <youremail@example.com>"] # Poetry prefers this format, update with your email
+readme = "README.md"
+packages = [{include = "milo_core"}] # This tells Poetry your package code is in the 'milo_core' directory
+
+[tool.poetry.dependencies]
+python = ">=3.10" # Should match [project].requires-python
+# Main dependencies will also be reflected here by 'poetry add'
+
+[tool.poetry.group.dev.dependencies]
+# Development dependencies like ruff and pytest will be added here by
+# 'poetry add <package_name> --group dev'
+ruff = "^0.11.12"
+pytest = "^8.4.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
