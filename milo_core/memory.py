@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
+from collections import deque
+from typing import Deque, List
 
 
 @dataclass
@@ -23,14 +24,11 @@ class ConversationMemory:
 
     def __init__(self, max_messages: int = 20) -> None:
         self.max_messages = max_messages
-        self._messages: List[Message] = []
+        self._messages: Deque[Message] = deque(maxlen=max_messages)
 
     def add_message(self, role: str, content: str) -> None:
         """Add a new message to memory, trimming if necessary."""
         self._messages.append(Message(role=role, content=content))
-        if len(self._messages) > self.max_messages:
-            # Keep only the most recent ``max_messages``
-            self._messages = self._messages[-self.max_messages :]
 
         # Placeholder for future RAG integration.
         # A hook here would store ``content`` in a local vector database
