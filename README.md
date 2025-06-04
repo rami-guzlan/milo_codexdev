@@ -40,3 +40,9 @@ Check linting with:
 ```bash
 poetry run ruff check .
 ```
+
+## Audio requirements
+Speech recognition depends on PyAudio, which requires OS-level
+`portaudio` libraries. The Python package is installed automatically
+through Poetry or the generated `requirements.txt`, but ensure your
+system has the necessary build tools and `portaudio` headers.
