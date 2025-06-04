@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol, Any
+from typing import Protocol, Any, Iterator
 
 
 class LocalModelInterface(Protocol):
@@ -12,6 +12,10 @@ class LocalModelInterface(Protocol):
 
     def generate_response(self, prompt: str, *args: Any, **kwargs: Any) -> str:
         """Generate a text response for the given prompt."""
+        ...
+
+    def stream_response(self, prompt: str, *args: Any, **kwargs: Any) -> Iterator[str]:
+        """Yield tokens for the generated response."""
         ...
 
     def unload(self) -> None:
@@ -27,6 +31,9 @@ class StubLocalModel:
 
     def generate_response(self, prompt: str, *args: Any, **kwargs: Any) -> str:
         raise NotImplementedError("Response generation is not implemented")
+
+    def stream_response(self, prompt: str, *args: Any, **kwargs: Any) -> Iterator[str]:
+        raise NotImplementedError("Streaming is not implemented")
 
     def unload(self) -> None:
         raise NotImplementedError("Local model unload is not implemented")
