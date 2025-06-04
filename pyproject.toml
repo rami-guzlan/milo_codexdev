@@ -27,6 +27,11 @@ packages = [{include = "milo_core"}] # This tells Poetry your package code is in
 [tool.poetry.dependencies]
 python = ">=3.10" # Should match [project].requires-python
 # Main dependencies will also be reflected here by 'poetry add'
+requests = ">=2.32.3,<3.0.0"
+transformers = ">=4.52.4,<5.0.0"
+torch = ">=2.7.0,<3.0.0"
+pyttsx3 = ">=2.98,<3.0"
+"speechrecognition[audio]" = ">=3.14.3,<4.0.0"
 
 [tool.poetry.group.dev.dependencies]
 # Development dependencies like ruff and pytest will be added here by
