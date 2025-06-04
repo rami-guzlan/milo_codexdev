@@ -19,6 +19,17 @@ Add a new dependency using:
 poetry add <package_name>
 ```
 
+## Model setup
+Download the model weights by running:
+
+```bash
+./model_download.sh
+```
+
+This script requires `huggingface-cli` and stores the model in
+`models/gemma-3-4b-it`. The assistant expects the weights in this default
+directory.
+
 ## Adding plugins
 Create a new file under `plugins/` with a class that subclasses `BaseSkill` and implements `execute`. When `PluginManager.discover_plugins()` runs, your skill will be loaded automatically.
 
@@ -45,4 +56,25 @@ poetry run ruff check .
 Speech recognition depends on PyAudio, which requires OS-level
 `portaudio` libraries. The Python package is installed automatically
 through Poetry or the generated `requirements.txt`, but ensure your
-system has the necessary build tools and `portaudio` headers.
+system has the necessary build tools and `portaudio` headers. Linux
+users must install the development headers first, for example:
+
+```bash
+sudo apt-get install portaudio19-dev
+```
+
+On macOS you can use Homebrew:
+
+```bash
+brew install portaudio
+```
+
+## Running MILO
+Start the assistant with:
+
+```bash
+poetry run python -m milo_core
+```
+
+Stop it at any time with `Ctrl+C`. New plugins added to the `plugins/`
+directory are discovered automatically when MILO starts.
