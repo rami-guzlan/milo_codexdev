@@ -31,7 +31,7 @@ This script requires `huggingface-cli` and stores the model in
 directory.
 
 ## Adding plugins
-Create a new file under `plugins/` with a class that subclasses `BaseSkill` and implements `execute`. When `PluginManager.discover_plugins()` runs, your skill will be loaded automatically.
+Create a new file under `plugins/` with a class that subclasses `BaseSkill` and implements `execute`. When `PluginManager.discover_plugins()` runs, your skill will be loaded automatically. Files named `test_*.py` are skipped by default; set the `MILO_INCLUDE_TEST_PLUGINS=1` environment variable or pass `include_tests=True` to `discover_plugins()` to load them.
 
 ## Testing and formatting
 Run tests with:
