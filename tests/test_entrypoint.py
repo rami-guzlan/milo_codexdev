@@ -42,6 +42,19 @@ class TextIteratorStreamer:
 """
     )
 
+    # stub whisper and TTS modules so imports succeed
+    (stubs / "whisper.py").write_text(
+        "def load_model(*args, **kwargs):\n    return None\n"
+    )
+    tts_pkg = stubs / "TTS"
+    tts_pkg.mkdir()
+    tts_pkg.joinpath("__init__.py").write_text("")
+    api_pkg = tts_pkg / "api"
+    api_pkg.mkdir()
+    api_pkg.joinpath("__init__.py").write_text(
+        "class TTS:\n    def __init__(self, *a, **k):\n        pass\n"
+    )
+
     env = os.environ.copy()
     env["PYTHONPATH"] = f"{stubs}{os.pathsep}{Path.cwd()}"
 
