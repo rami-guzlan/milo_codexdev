@@ -11,10 +11,6 @@ def test_module_entrypoint(tmp_path: Path) -> None:
     stubs.mkdir()
 
     (stubs / "torch.py").write_text("float16 = None")
-    (stubs / "pyttsx3.py").write_text("")
-    (stubs / "speech_recognition.py").write_text(
-        "Recognizer=None\nMicrophone=None\nUnknownValueError=Exception"
-    )
     transformers = stubs / "transformers"
     transformers.mkdir()
     transformers.joinpath("__init__.py").write_text(
