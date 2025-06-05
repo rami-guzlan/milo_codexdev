@@ -31,38 +31,6 @@ This script requires `huggingface-cli` and stores the model in
 directory.
 
 
-## Adding plugins
-Plugins live in the `plugins/` directory. Each plugin subclasses `BaseSkill` and defines a unique `name`. When `PluginManager.discover_plugins()` runs at startup, your skill is loaded automatically.
-
-Example plugin (`plugins/file_finder.py`):
-
-```python
-from pathlib import Path
-from plugins.base import BaseSkill
-
-class FileFinder(BaseSkill):
-    name = "file_finder"
-
-    def execute(self, filename: str) -> str:
-        for path in Path.home().rglob(filename):
-            return str(path)
-        return "not found"
-```
-
-Load and execute the skill:
-
-```python
-from milo_core.plugin_manager import PluginManager
-
-pm = PluginManager()
-pm.discover_plugins()
-skill = pm.get_skill_by_name("file_finder")
-print(skill.execute("todo.txt"))
-```
-
-The repository includes a small `TestSkill` plugin which you can use as a reference when creating new skills.
-
-
 ## Testing and formatting
 Run tests with:
 
