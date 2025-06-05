@@ -11,9 +11,16 @@ def test_module_entrypoint(tmp_path: Path) -> None:
     stubs.mkdir()
 
     (stubs / "torch.py").write_text("float16 = None")
-    (stubs / "pyttsx3.py").write_text("")
-    (stubs / "speech_recognition.py").write_text(
-        "Recognizer=None\nMicrophone=None\nUnknownValueError=Exception"
+    (stubs / "whisper.py").write_text(
+        "def load_model(name):\n    class M:\n        def transcribe(self, audio, fp16=False):\n            return {'text': ''}\n    return M()"
+    )
+    tts_pkg = stubs / "TTS"
+    tts_pkg.mkdir()
+    (tts_pkg / "__init__.py").write_text("")
+    api_pkg = tts_pkg / "api"
+    api_pkg.mkdir()
+    api_pkg.joinpath("__init__.py").write_text(
+        "class TTS:\n    def __init__(self, *a, **k):\n        pass\n    def tts(self, text):\n        return []\n    class synthesizer:\n        output_sample_rate = 16000"
     )
     transformers = stubs / "transformers"
     transformers.mkdir()
