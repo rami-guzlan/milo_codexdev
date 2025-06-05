@@ -13,6 +13,13 @@ Install dependencies with Poetry:
 poetry install
 ```
 
+Poetry is the canonical way to manage MILO's Python dependencies.
+If you need a `requirements.txt` for other tooling, generate it with
+
+```bash
+poetry export -f requirements.txt --output requirements.txt --without-hashes
+```
+
 Add a new dependency using:
 
 ```bash
