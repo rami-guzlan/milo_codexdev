@@ -15,6 +15,9 @@ dependencies = [
     "speechrecognition[audio] (>=3.14.3,<4.0.0)"
 ]
 
+[project.scripts]
+milo-core = "milo_core.main:main"
+
 # This section is for Poetry's specific configuration
 [tool.poetry]
 name = "milo-codexdev" # Should match [project].name

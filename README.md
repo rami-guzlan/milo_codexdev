@@ -73,7 +73,7 @@ brew install portaudio
 Start the assistant with:
 
 ```bash
-poetry run python -m milo_core
+poetry run milo-core
 ```
 
 Stop it at any time with `Ctrl+C`. New plugins added to the `plugins/`
