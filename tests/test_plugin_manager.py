@@ -4,11 +4,17 @@ from milo_core.plugin_manager import PluginManager
 from plugins.base import BaseSkill
 
 
-def test_discover_plugins():
+def test_discover_plugins_ignores_test_plugins_by_default() -> None:
+    manager = PluginManager()
+    manager.discover_plugins()
+    assert manager.get_skill_by_name("test") is None
+
+
+def test_discover_plugins_can_include_tests(monkeypatch) -> None:
+    monkeypatch.setenv("MILO_INCLUDE_TEST_PLUGINS", "1")
     manager = PluginManager()
     manager.discover_plugins()
     skill = manager.get_skill_by_name("test")
-    assert skill is not None
     assert isinstance(skill, BaseSkill)
     assert skill.execute() == "executed"
 
