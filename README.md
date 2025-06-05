@@ -51,27 +51,15 @@ poetry run ruff check .
 ```
 
 ## Audio requirements
-Speech recognition depends on PyAudio, which requires the system
-`portaudio` libraries. The Python package is installed automatically
-through Poetry or the generated `requirements.txt`, but ensure your
-system has the necessary build tools and headers installed. Linux users
-must install the development package first, for example:
+Speech recognition is powered by Whisper via the `openai-whisper` package.
+Text-to-speech uses Coqui TTS from the `TTS` package. Both components rely
+on the `sounddevice` library for microphone input and speaker output.
+Ensure `ffmpeg` is installed so audio can be decoded and played back.
+
+Linux example:
 
 ```bash
-sudo apt-get install portaudio19-dev
-```
-
-On macOS you can use Homebrew:
-
-```bash
-brew install portaudio
-```
-
-For text-to-speech via `pyttsx3` you may also need the `espeak` engine on
-Linux:
-
-```bash
-sudo apt-get install espeak ffmpeg
+sudo apt-get install ffmpeg
 ```
 
 ## Running MILO
