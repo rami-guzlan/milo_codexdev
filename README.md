@@ -26,6 +26,13 @@ Add a new dependency using:
 poetry add <package_name>
 ```
 
+### Hardware Recommendations
+Running large language and speech models locally is resource-intensive. For a smooth experience, we recommend the following minimum hardware:
+
+* **RAM:** **16 GB** or more. 32 GB is recommended for larger models.
+* **GPU:** A dedicated NVIDIA GPU (for CUDA) with at least **8 GB of VRAM** is highly recommended for performant LLM inference. The application will fall back to the CPU, but this will be significantly slower.
+* **Storage:** At least 20 GB of free space for models and dependencies.
+
 ## Model setup
 Before downloading the weights you must authenticate with Hugging Face. Run
 `huggingface-cli login` (or set the `HUGGINGFACE_TOKEN` environment variable)
@@ -41,6 +48,14 @@ Download the model weights by running:
 This script requires `huggingface-cli` and stores the model in
 `models/gemma-3-4b-it`. The assistant expects the weights in this default
 directory.
+
+You also need to download a voice for the Text-to-Speech engine. We recommend a standard quality voice to start:
+
+```bash
+# Download the Piper TTS voice model
+wget '[https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true](https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true)' -O ./piper-voice.onnx
+```
+This command downloads the voice model and saves it as piper-voice.onnx in the root directory, where MILO expects to find it.
 
 ## Memory system
 MILO stores long-term notes in a local ChromaDB instance under
@@ -68,18 +83,20 @@ Check linting with:
 poetry run ruff check .
 ```
 
+
 ## Audio requirements
-Speech recognition is powered by Whisper via the `openai-whisper` package.
-Text-to-speech uses Coqui TTS from the `TTS` package. Audio capture and
-playback are handled by `ffmpeg` and `ffplay`, so make sure these tools are
-installed and available on your `PATH`.
+Speech recognition is powered by `faster-whisper`, a high-performance implementation of OpenAI's Whisper model. Text-to-speech uses `piper-tts`, a fast and local neural TTS system.
 
-Linux example:
+Audio capture and playback are handled by `ffmpeg` and `ffplay`. Ensure these command-line tools are installed and available on your system's `PATH`.
 
+**Linux Example:**
 ```bash
-sudo apt-get install ffmpeg
+sudo apt-get update && sudo apt-get install ffmpeg
 ```
-
+macOS (using Homebrew):
+```bash
+brew install ffmpeg
+```
 ## Running MILO
 Start the assistant with:
 
