@@ -64,9 +64,9 @@ poetry run ruff check .
 
 ## Audio requirements
 Speech recognition is powered by Whisper via the `openai-whisper` package.
-Text-to-speech uses Coqui TTS from the `TTS` package. Both components rely
-on the `sounddevice` library for microphone input and speaker output.
-Ensure `ffmpeg` is installed so audio can be decoded and played back.
+Text-to-speech uses Coqui TTS from the `TTS` package. Audio capture and
+playback are handled by `ffmpeg` and `ffplay`, so make sure these tools are
+installed and available on your `PATH`.
 
 Linux example:
 
