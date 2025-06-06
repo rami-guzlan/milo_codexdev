@@ -53,6 +53,7 @@ def test_whisper_stt_listen_with_vad() -> None:
         mock_model.transcribe.call_args[0][0],
         concatenated,
     )
+    mock_model.transcribe.assert_called_once()
 
 
 def test_piper_tts_speak(monkeypatch) -> None:
@@ -85,6 +86,8 @@ def test_piper_tts_speak(monkeypatch) -> None:
             tts._queue.put(None)
             tts._run()
             mock_popen.assert_called_once()
+            voice_instance.synthesize_stream_raw.assert_called_with("hi")
+            proc.stdin.write.assert_called_with(b"a")
 
     del sys.modules["piper"]
     del sys.modules["piper.voice"]
