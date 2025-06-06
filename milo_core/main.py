@@ -26,11 +26,15 @@ def run(args: argparse.Namespace) -> None:
     stt = WhisperSTT()
     tts = PiperTTS("./piper-voice.onnx")
 
+    from milo_core.memory_manager import MemoryManager
+
+    memory_manager = MemoryManager(model)
+
     pm = PluginManager()
     pm.discover_plugins()
 
     try:
-        converse(model, stt, tts)
+        converse(model, stt, tts, memory_manager)
     except KeyboardInterrupt:
         pass
     finally:

@@ -42,6 +42,12 @@ This script requires `huggingface-cli` and stores the model in
 `models/gemma-3-4b-it`. The assistant expects the weights in this default
 directory.
 
+## Memory system
+MILO stores long-term notes in a local ChromaDB instance under
+`./milo_memory_db`. Each conversation session is summarized and verified
+for usefulness before being saved. Older memories are consolidated into
+weekly digests when the assistant starts.
+
 
 ## Testing and formatting
 Run tests with:
