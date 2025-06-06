@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Protocol, Any, Iterator
+from typing import Protocol, Any, Iterator, List
+
+from milo_core.memory import Message
 
 
 class LocalModelInterface(Protocol):
@@ -14,8 +16,10 @@ class LocalModelInterface(Protocol):
         """Generate a text response for the given prompt."""
         ...
 
-    def stream_response(self, prompt: str, *args: Any, **kwargs: Any) -> Iterator[str]:
-        """Yield tokens for the generated response."""
+    def stream_response(
+        self, history: List[Message], *args: Any, **kwargs: Any
+    ) -> Iterator[str]:
+        """Yield tokens for the generated response based on chat history."""
         ...
 
     def unload(self) -> None:
@@ -32,7 +36,9 @@ class StubLocalModel:
     def generate_response(self, prompt: str, *args: Any, **kwargs: Any) -> str:
         raise NotImplementedError("Response generation is not implemented")
 
-    def stream_response(self, prompt: str, *args: Any, **kwargs: Any) -> Iterator[str]:
+    def stream_response(
+        self, history: List[Message], *args: Any, **kwargs: Any
+    ) -> Iterator[str]:
         raise NotImplementedError("Streaming is not implemented")
 
     def unload(self) -> None:
