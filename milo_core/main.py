@@ -5,6 +5,7 @@ from milo_core.llm.gemma import GemmaLocalModel
 from milo_core.plugin_manager import PluginManager
 from milo_core.voice.conversation import converse
 from milo_core.voice.engines import WhisperSTT, PiperTTS
+from milo_core.gui import run_gui
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -26,6 +27,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=0.8,
         help="Seconds of silence that mark the end of an utterance",
+    )
+    parser.add_argument(
+        "--no-gui",
+        action="store_true",
+        help="Run without the graphical interface",
     )
     return parser
 
@@ -49,7 +55,10 @@ def run(args: argparse.Namespace) -> None:
     pm.discover_plugins()
 
     try:
-        converse(model, stt, tts, memory_manager)
+        if args.no_gui:
+            converse(model, stt, tts, memory_manager)
+        else:
+            run_gui(model, stt, tts, memory_manager)
     except KeyboardInterrupt:
         pass
     finally:
