@@ -3,15 +3,18 @@ from __future__ import annotations
 import queue
 import subprocess
 import threading
+import time
 from typing import Iterable
 
 import numpy as np
+import pyaudio
+import torch
 
 from .interface import SpeechToText, TextToSpeech
 
 
 class WhisperSTT(SpeechToText):
-    """Speech recognition using `faster-whisper` with `ffmpeg` input."""
+    """Speech recognition using `faster-whisper` with a VAD microphone stream."""
 
     def __init__(
         self,
@@ -20,6 +23,8 @@ class WhisperSTT(SpeechToText):
         block_size: int = 16_000,
         input_format: str = "pulse",
         input_device: str = "default",
+        vad_threshold: float = 0.5,
+        vad_silence_duration: float = 0.8,
     ) -> None:
         from faster_whisper import WhisperModel  # lazy import
 
@@ -28,34 +33,63 @@ class WhisperSTT(SpeechToText):
         self.block_size = block_size
         self.input_format = input_format
         self.input_device = input_device
+        self.vad_threshold = vad_threshold
+        self.vad_silence_duration = vad_silence_duration
+
+        self.vad_model, vad_utils = torch.hub.load(
+            "snakers4/silero-vad",
+            "silero_vad",
+            trust_repo=True,
+        )
+        (
+            self.get_speech_timestamps,
+            _,
+            self.read_audio,
+            _,
+            self.collect_chunks,
+        ) = vad_utils
 
     def listen(self) -> str:
-        duration = self.block_size / self.sample_rate
-        proc = subprocess.run(
-            [
-                "ffmpeg",
-                "-nostdin",
-                "-loglevel",
-                "quiet",
-                "-f",
-                self.input_format,
-                "-i",
-                self.input_device,
-                "-t",
-                str(duration),
-                "-ar",
-                str(self.sample_rate),
-                "-ac",
-                "1",
-                "-f",
-                "f32le",
-                "-",
-            ],
-            stdout=subprocess.PIPE,
-            check=False,
+        pa = pyaudio.PyAudio()
+        stream = pa.open(
+            format=pyaudio.paFloat32,
+            channels=1,
+            rate=self.sample_rate,
+            input=True,
+            frames_per_buffer=self.block_size,
+            input_device_index=None,
         )
-        samples = np.frombuffer(proc.stdout, dtype=np.float32)
-        segments, _ = self.model.transcribe(samples)
+
+        audio_chunks: list[np.ndarray] = []
+        silence_start: float | None = None
+        speech_detected = False
+
+        try:
+            while True:
+                data = stream.read(self.block_size, exception_on_overflow=False)
+                samples = np.frombuffer(data, dtype=np.float32)
+                speech_prob = self.vad_model(
+                    torch.from_numpy(samples), self.sample_rate
+                ).item()
+                if speech_prob > self.vad_threshold:
+                    speech_detected = True
+                    silence_start = None
+                    audio_chunks.append(samples)
+                elif speech_detected:
+                    if silence_start is None:
+                        silence_start = time.time()
+                    elif time.time() - silence_start >= self.vad_silence_duration:
+                        break
+        finally:
+            stream.stop_stream()
+            stream.close()
+            pa.terminate()
+
+        if not audio_chunks:
+            return ""
+
+        audio = np.concatenate(audio_chunks)
+        segments, _ = self.model.transcribe(audio)
         return "".join(segment.text for segment in segments).strip()
 
 

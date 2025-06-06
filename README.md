@@ -85,13 +85,13 @@ poetry run ruff check .
 
 
 ## Audio requirements
-Speech recognition is powered by `faster-whisper`, a high-performance implementation of OpenAI's Whisper model. Text-to-speech uses `piper-tts`, a fast and local neural TTS system.
+Speech recognition is powered by `faster-whisper`, a high-performance implementation of OpenAI's Whisper model. Voice capture now uses a real-time Voice Activity Detection (VAD) model so MILO responds as soon as you speak. Text-to-speech uses `piper-tts`, a fast and local neural TTS system.
 
-Audio capture and playback are handled by `ffmpeg` and `ffplay`. Ensure these command-line tools are installed and available on your system's `PATH`.
+Audio capture and playback are handled by `ffmpeg` and `ffplay`. The VAD system relies on `PyAudio` which may require the `portaudio` development headers.
 
 **Linux Example:**
 ```bash
-sudo apt-get update && sudo apt-get install ffmpeg
+sudo apt-get update && sudo apt-get install ffmpeg portaudio19-dev
 ```
 macOS (using Homebrew):
 ```bash
@@ -106,6 +106,19 @@ poetry run milo-core
 
 Stop it at any time with `Ctrl+C`. New plugins added to the `plugins/`
 directory are discovered automatically when MILO starts.
+
+## Conversational Interaction
+MILO listens continuously and detects when you start and stop speaking using a Voice Activity Detection model. This allows for more natural back-and-forth conversation without fixed recording lengths.
+
+## Configuration
+The `milo-core` command accepts a few options to tune VAD behaviour:
+
+```bash
+poetry run milo-core --vad-threshold 0.6 --vad-silence-duration 1.0
+```
+
+* `--vad-threshold` – speech probability needed to consider audio as speech (0-1).
+* `--vad-silence-duration` – seconds of silence before an utterance is finalized.
 
 ## Running n8n workflows
 n8n acts as a local bridge to external services. Start an instance locally (Docker example):
