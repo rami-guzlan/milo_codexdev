@@ -19,7 +19,7 @@ def test_main_starts_conversation(
     mock_model,
     mock_converse,
 ) -> None:
-    main([])
+    main(["--no-gui"])
     mock_model.assert_called_with("models/gemma-3-4b-it")
     mock_model.return_value.load_model.assert_called_once()
     mock_pm.return_value.discover_plugins.assert_called_once()

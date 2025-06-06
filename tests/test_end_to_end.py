@@ -46,7 +46,7 @@ def test_end_to_end_skill_execution() -> None:
             "milo_core.commands.execute_command", wraps=commands.execute_command
         ) as exec_mock,
     ):
-        main([])
+        main(["--no-gui"])
         exec_mock.assert_called_once_with(
             {"type": "skill", "name": "test"}, plugin_manager
         )
