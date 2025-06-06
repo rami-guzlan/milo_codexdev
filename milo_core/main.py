@@ -15,6 +15,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="models/gemma-3-4b-it",
         help="Path to the local model directory",
     )
+    parser.add_argument(
+        "--vad-threshold",
+        type=float,
+        default=0.5,
+        help="Speech probability threshold for voice activity detection",
+    )
+    parser.add_argument(
+        "--vad-silence-duration",
+        type=float,
+        default=0.8,
+        help="Seconds of silence that mark the end of an utterance",
+    )
     return parser
 
 
@@ -23,7 +35,10 @@ def run(args: argparse.Namespace) -> None:
     model = GemmaLocalModel(args.model_dir)
     model.load_model()
 
-    stt = WhisperSTT()
+    stt = WhisperSTT(
+        vad_threshold=args.vad_threshold,
+        vad_silence_duration=args.vad_silence_duration,
+    )
     tts = PiperTTS("./piper-voice.onnx")
 
     from milo_core.memory_manager import MemoryManager
