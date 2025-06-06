@@ -27,6 +27,11 @@ poetry add <package_name>
 ```
 
 ## Model setup
+Before downloading the weights you must authenticate with Hugging Face. Run
+`huggingface-cli login` (or set the `HUGGINGFACE_TOKEN` environment variable)
+so the CLI can access the model. You can also use SSH keys if you have them
+configured on your Hugging Face account.
+
 Download the model weights by running:
 
 ```bash
