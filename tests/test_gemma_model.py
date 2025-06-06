@@ -3,44 +3,20 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from milo_core.llm.gemma import GemmaLocalModel
+from milo_core.memory import Message
 
 
-@patch("milo_core.llm.gemma.AutoTokenizer")
-@patch("milo_core.llm.gemma.AutoModelForCausalLM")
-def test_gemma_model_generation(mock_model_cls, mock_tokenizer_cls) -> None:
-    mock_tokenizer = MagicMock()
-    mock_tokenizer.__call__ = MagicMock(return_value={"input_ids": [[0]]})
-    mock_tokenizer.decode.return_value = "hello"
-    mock_tokenizer_cls.from_pretrained.return_value = mock_tokenizer
+@patch("milo_core.llm.gemma.Llama")
+def test_gemma_stream(mock_llama_cls) -> None:
+    mock_llama = MagicMock()
+    mock_stream = [
+        {"choices": [{"delta": {"content": "a"}}]},
+        {"choices": [{"delta": {"content": "b"}}]},
+    ]
+    mock_llama.create_chat_completion.return_value = iter(mock_stream)
+    mock_llama_cls.return_value = mock_llama
 
-    mock_model = MagicMock()
-    mock_model.generate.return_value = [[0]]
-    mock_model_cls.from_pretrained.return_value = mock_model
-
-    model = GemmaLocalModel("/tmp/model")
-    model.load_model()
-    out = model.generate_response("hi")
-    assert out == "hello"
-    mock_model.generate.assert_called_once()
-
-
-@patch("milo_core.llm.gemma.TextIteratorStreamer")
-@patch("milo_core.llm.gemma.AutoTokenizer")
-@patch("milo_core.llm.gemma.AutoModelForCausalLM")
-def test_gemma_model_stream(
-    mock_model_cls, mock_tokenizer_cls, mock_streamer_cls
-) -> None:
-    mock_tokenizer = MagicMock()
-    mock_tokenizer.__call__ = MagicMock(return_value={"input_ids": [[0]]})
-    mock_tokenizer_cls.from_pretrained.return_value = mock_tokenizer
-    mock_streamer = MagicMock()
-    mock_streamer.__iter__.return_value = iter(["a", "b"])
-    mock_streamer_cls.return_value = mock_streamer
-    mock_model = MagicMock()
-    mock_model.generate.side_effect = lambda **kwargs: None
-    mock_model_cls.from_pretrained.return_value = mock_model
-
-    model = GemmaLocalModel("/tmp/model")
-    model.load_model()
-    tokens = list(model.stream_response("hi"))
+    model = GemmaLocalModel("model")
+    history = [Message(role="user", content="hi")]
+    tokens = list(model.stream_response(history))
     assert tokens == ["a", "b"]

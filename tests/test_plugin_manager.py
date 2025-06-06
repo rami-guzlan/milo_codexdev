@@ -26,7 +26,7 @@ def test_local_model_interface_stub():
     for method in (
         model.load_model,
         lambda: model.generate_response("hi"),
-        lambda: next(model.stream_response("hi")),
+        lambda: next(model.stream_response([])),
         model.unload,
     ):
         try:

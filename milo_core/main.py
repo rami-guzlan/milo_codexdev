@@ -4,7 +4,7 @@ from typing import List
 from milo_core.llm.gemma import GemmaLocalModel
 from milo_core.plugin_manager import PluginManager
 from milo_core.voice.conversation import converse
-from milo_core.voice.engines import WhisperSTT, CoquiTTS
+from milo_core.voice.engines import WhisperSTT, PiperTTS
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -24,7 +24,7 @@ def run(args: argparse.Namespace) -> None:
     model.load_model()
 
     stt = WhisperSTT()
-    tts = CoquiTTS()
+    tts = PiperTTS("./piper-voice.onnx")
 
     pm = PluginManager()
     pm.discover_plugins()

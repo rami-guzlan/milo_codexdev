@@ -1,59 +1,39 @@
 from __future__ import annotations
 
-import threading
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, List
 
-import torch
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    TextIteratorStreamer,
-)
+from llama_cpp import Llama
 
 from .interface import LocalModelInterface
+from milo_core.memory import Message
 
 
 class GemmaLocalModel(LocalModelInterface):
-    """Load and interact with a local Gemma model."""
+    """Load and interact with a local Gemma GGUF model using llama.cpp."""
 
-    def __init__(self, model_dir: str | Path) -> None:
-        self.model_dir = Path(model_dir)
-        self.model = None
-        self.tokenizer = None
+    def __init__(self, model_path: str | Path) -> None:
+        self.model_path = str(model_path)
+        # n_gpu_layers=-1 attempts to offload all possible layers to the GPU
+        self.model = Llama(model_path=self.model_path, n_gpu_layers=-1, verbose=False)
 
-    def load_model(self) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_dir, torch_dtype=torch.float16
+    def stream_response(
+        self, history: List[Message], max_new_tokens: int = 256
+    ) -> Iterator[str]:
+        """Yield tokens for the generated response based on chat history."""
+        dict_history = [{"role": msg.role, "content": msg.content} for msg in history]
+        stream = self.model.create_chat_completion(
+            messages=dict_history, max_tokens=max_new_tokens, stream=True
         )
-        self.model.to("cpu")
+        for output in stream:
+            content = output["choices"][0]["delta"].get("content")
+            if content:
+                yield content
 
-    def generate_response(self, prompt: str, max_new_tokens: int = 256) -> str:
-        assert self.model is not None and self.tokenizer is not None, "Model not loaded"
-        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
-        output_ids = self.model.generate(input_ids, max_new_tokens=max_new_tokens)
-        return self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
+    def load_model(self) -> None:  # noqa: D401 - kept for interface compatibility
+        """Load the model. llama-cpp-python loads in __init__."""
+        return None
 
-    def stream_response(self, prompt: str, max_new_tokens: int = 256) -> Iterator[str]:
-        assert self.model is not None and self.tokenizer is not None, "Model not loaded"
-        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
-        streamer = TextIteratorStreamer(
-            self.tokenizer, skip_prompt=True, skip_special_tokens=True
-        )
-        thread = threading.Thread(
-            target=self.model.generate,
-            kwargs={
-                "input_ids": input_ids,
-                "max_new_tokens": max_new_tokens,
-                "streamer": streamer,
-            },
-        )
-        thread.start()
-        for token in streamer:
-            yield token
-        thread.join()
-
-    def unload(self) -> None:
-        self.model = None
-        self.tokenizer = None
+    def unload(self) -> None:  # noqa: D401 - kept for interface compatibility
+        """Unload the model (handled by llama-cpp-python)."""
+        return None

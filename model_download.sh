@@ -8,6 +8,6 @@ if ! command -v huggingface-cli >/dev/null 2>&1; then
   exit 1
 fi
 
-huggingface-cli download google/gemma-3-4b-it --local-dir "$MODEL_DIR" --local-dir-use-symlinks False
+huggingface-cli download bartowski/gemma-2-9b-it-gguf gemma-2-9b-it-Q4_K_M.gguf --local-dir "$MODEL_DIR" --local-dir-use-symlinks False
 
 echo "Model downloaded to $MODEL_DIR"

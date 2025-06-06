@@ -9,10 +9,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "requests (>=2.32.3,<3.0.0)",
-    "transformers (>=4.52.4,<5.0.0)",
-    "torch (>=2.7.0,<3.0.0)",
-    "openai-whisper (>=20240930,<20240931)",
-    "TTS (>=0.22.0,<1.0.0); python_version < '3.12'"
+    "llama-cpp-python (>=0.2.71,<0.3.0)",
+    "faster-whisper (>=0.10.0,<0.11.0)",
+    "piper-tts (>=1.2.0,<2.0.0)"
 ]
 
 [project.scripts]
@@ -31,10 +30,9 @@ packages = [{include = "milo_core"}] # This tells Poetry your package code is in
 python = ">=3.10" # Should match [project].requires-python
 # Main dependencies will also be reflected here by 'poetry add'
 requests = ">=2.32.3,<3.0.0"
-transformers = ">=4.52.4,<5.0.0"
-torch = ">=2.7.0,<3.0.0"
-"openai-whisper" = ">=20240930,<20240931"
-TTS = {version = ">=0.22.0,<1.0.0", markers = "python_version < '3.12'"}
+llama-cpp-python = ">=0.2.71,<0.3.0"
+faster-whisper = ">=0.10.0,<0.11.0"
+piper-tts = ">=1.2.0,<2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 # Development dependencies like ruff and pytest will be added here by
