@@ -6,57 +6,98 @@ MILO aims to give users a private, local-first assistant. All core reasoning and
 - **Local-first**: keep user data on device and run the AI locally.
 - **Plugin-based architecture**: skills live in the `plugins/` directory and are discovered by the `PluginManager`.
 
-## Development setup
-Install dependencies with Poetry:
+## Getting Started
+
+This guide will walk you through setting up and running the MILO assistant on your local machine.
+
+### 1. Prerequisites
+
+Before you begin, ensure you have the following tools installed on your system. It is highly recommended to use a version manager like `asdf` or `mise` to handle different versions of these tools.
+
+| Tool | Required Version | Notes |
+| :--- | :--- | :--- |
+| **Python** | `3.11.x` | The core language for the application. |
+| **Node.js** | `20.x` | Recommended for n8n workflow development tools. |
+| **ffmpeg** | Latest | Required for audio playback. |
+| **Poetry** | Latest | The dependency manager for this project. |
+| **PortAudio** | - | Required by `PyAudio` on Linux systems. |
+
+### 2. Installation
+
+Follow these steps to get the application running.
+
+**A. Clone the Repository**
+
+First, clone the project to your local machine:
+```bash
+git clone <your-repository-url>
+cd MILO-Codex
+```
+
+**B. Install System Dependencies**
+
+You need to install ffmpeg for audio processing and, on Linux, the portaudio development headers for the PyAudio library.
+
+On Debian/Ubuntu (Linux):
+```bash
+sudo apt-get update && sudo apt-get install ffmpeg portaudio19-dev
+```
+
+On macOS (using Homebrew):
+```bash
+brew install ffmpeg portaudio
+```
+
+On Windows: You can install ffmpeg using a package manager like Chocolatey (`choco install ffmpeg`) or Scoop (`scoop install ffmpeg`). PortAudio is not typically required for PyAudio on Windows as wheels are pre-compiled.
+
+**C. Install Python Dependencies**
+
+This project uses Poetry to manage its Python packages. Install them with a single command:
 
 ```bash
 poetry install
 ```
 
-Poetry is the canonical way to manage MILO's Python dependencies.
-If you need a `requirements.txt` for other tooling, generate it with
+This will create a virtual environment and install all necessary libraries like faster-whisper, piper-tts, and llama-cpp-python.
+
+### 3. Model Setup
+MILO requires a local language model and a text-to-speech (TTS) voice model to function.
+
+**A. Log in to Hugging Face**
+
+You'll need to download the main language model from Hugging Face. First, authenticate your machine.
 
 ```bash
-poetry export -f requirements.txt --output requirements.txt --without-hashes
+huggingface-cli login
 ```
 
-Add a new dependency using:
+Enter your Hugging Face token when prompted.
 
-```bash
-poetry add <package_name>
-```
+**B. Download the Language Model**
 
-### Hardware Recommendations
-Running large language and speech models locally is resource-intensive. For a smooth experience, we recommend the following minimum hardware:
-
-* **RAM:** **16 GB** or more. 32 GB is recommended for larger models.
-* **GPU:** A dedicated NVIDIA GPU (for CUDA) with at least **8 GB of VRAM** is highly recommended for performant LLM inference. The application will fall back to the CPU, but this will be significantly slower.
-* **Storage:** At least 20 GB of free space for models and dependencies.
-
-## Model setup
-Before downloading the weights you must authenticate with Hugging Face. Run
-`huggingface-cli login` (or set the `HUGGINGFACE_TOKEN` environment variable)
-so the CLI can access the model. You can also use SSH keys if you have them
-configured on your Hugging Face account.
-
-Download the model weights by running:
+Run the provided script to download the quantized Gemma model. This will save it to the `models/` directory.
 
 ```bash
 ./model_download.sh
 ```
 
-This script requires `huggingface-cli` and stores the model in
-`models/gemma-3-4b-it`. The assistant expects the weights in this default
-directory.
+**C. Download the TTS Voice Model**
 
-You also need to download a voice for the Text-to-Speech engine. We recommend a standard quality voice to start:
+Next, download the pre-trained voice for the text-to-speech engine. The application expects this file to be in the root directory.
 
 ```bash
 # Download the Piper TTS voice model
 wget '[https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true](https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true)' -O ./piper-voice.onnx
 ```
-This command downloads the voice model and saves it as piper-voice.onnx in the root directory, where MILO expects to find it.
 
+### 4. Running MILO
+Once all dependencies and models are in place, you can start the assistant with the following command:
+
+```bash
+poetry run milo-core
+```
+
+You can stop the assistant at any time by pressing Ctrl+C.
 ## Memory system
 MILO stores long-term notes in a local ChromaDB instance under
 `./milo_memory_db`. Each conversation session is summarized and verified
@@ -81,21 +122,6 @@ Check linting with:
 
 ```bash
 poetry run ruff check .
-```
-
-
-## Audio requirements
-Speech recognition is powered by `faster-whisper`, a high-performance implementation of OpenAI's Whisper model. Voice capture now uses a real-time Voice Activity Detection (VAD) model so MILO responds as soon as you speak. Text-to-speech uses `piper-tts`, a fast and local neural TTS system.
-
-Audio capture and playback are handled by `ffmpeg` and `ffplay`. The VAD system relies on `PyAudio` which may require the `portaudio` development headers.
-
-**Linux Example:**
-```bash
-sudo apt-get update && sudo apt-get install ffmpeg portaudio19-dev
-```
-macOS (using Homebrew):
-```bash
-brew install ffmpeg
 ```
 ## Running MILO
 Start the assistant with:
