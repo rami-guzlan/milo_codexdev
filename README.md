@@ -133,6 +133,23 @@ poetry run milo-core
 Stop it at any time with `Ctrl+C`. New plugins added to the `plugins/`
 directory are discovered automatically when MILO starts.
 
+## Building a standalone executable
+You can create a single-file binary using PyInstaller. Run:
+
+```bash
+./scripts/build_executable.sh
+```
+
+The compiled executable will be placed in the `dist/` directory. When the
+binary launches it checks for the Gemma model and automatically runs
+`model_download.sh` if the files are missing.
+
+Run the binary directly with:
+
+```bash
+./dist/milo
+```
+
 ## Conversational Interaction
 MILO listens continuously and detects when you start and stop speaking using a Voice Activity Detection model. This allows for more natural back-and-forth conversation without fixed recording lengths.
 

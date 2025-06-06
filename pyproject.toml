@@ -49,6 +49,7 @@ webrtcvad-wheels = ">=2.0.14,<3.0.0"
 # 'poetry add <package_name> --group dev'
 ruff = "^0.11.12"
 pytest = "^8.4.0"
+pyinstaller = "^6.14.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
