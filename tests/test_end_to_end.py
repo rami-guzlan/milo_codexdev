@@ -38,7 +38,7 @@ def test_end_to_end_skill_execution() -> None:
     with (
         patch("milo_core.main.GemmaLocalModel", return_value=model),
         patch("milo_core.main.WhisperSTT", return_value=stt),
-        patch("milo_core.main.PiperTTS", return_value=tts),
+        patch("milo_core.main.CoquiTTS", return_value=tts),
         patch("milo_core.main.PluginManager", return_value=plugin_manager),
         patch("milo_core.memory_manager.MemoryManager", return_value=memory_manager),
         patch("milo_core.main.converse", side_effect=fake_converse),

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 
-from milo_core.voice.engines import WhisperSTT, PiperTTS
+from milo_core.voice.engines import WhisperSTT, CoquiTTS
 
 
 def test_whisper_stt_listen_with_vad() -> None:
@@ -56,16 +56,15 @@ def test_whisper_stt_listen_with_vad() -> None:
     mock_model.transcribe.assert_called_once()
 
 
-def test_piper_tts_speak(monkeypatch) -> None:
-    # create dummy piper module
-    piper_module = types.ModuleType("piper")
-    voice_module = types.ModuleType("piper.voice")
-    voice_instance = MagicMock()
-    voice_module.PiperVoice = MagicMock()
-    voice_module.PiperVoice.load.return_value = voice_instance
-    piper_module.voice = voice_module
-    sys.modules["piper"] = piper_module
-    sys.modules["piper.voice"] = voice_module
+def test_coqui_tts_speak(monkeypatch) -> None:
+    # create dummy Coqui TTS module
+    tts_module = types.ModuleType("TTS")
+    api_module = types.ModuleType("TTS.api")
+    tts_instance = MagicMock()
+    api_module.TTS = MagicMock(return_value=tts_instance)
+    tts_module.api = api_module
+    sys.modules["TTS"] = tts_module
+    sys.modules["TTS.api"] = api_module
 
     class DummyThread:
         def __init__(self, target, daemon=False):
@@ -79,15 +78,15 @@ def test_piper_tts_speak(monkeypatch) -> None:
             proc = MagicMock()
             proc.stdin = MagicMock()
             mock_popen.return_value = proc
-            voice_instance.config.sample_rate = 16000
-            voice_instance.synthesize_stream_raw.return_value = [b"a"]
-            tts = PiperTTS("model", "config")
+            tts_instance.synthesizer.output_sample_rate = 22050
+            tts_instance.tts.return_value = np.array([0.1, -0.1], dtype=np.float32)
+            tts = CoquiTTS("model", "config")
             tts.speak(["hi"])
             tts._queue.put(None)
             tts._run()
             mock_popen.assert_called_once()
-            voice_instance.synthesize_stream_raw.assert_called_with("hi")
-            proc.stdin.write.assert_called_with(b"a")
+            tts_instance.tts.assert_called_with("hi")
+            proc.stdin.write.assert_called()
 
-    del sys.modules["piper"]
-    del sys.modules["piper.voice"]
+    del sys.modules["TTS"]
+    del sys.modules["TTS.api"]

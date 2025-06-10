@@ -4,7 +4,7 @@ from typing import List
 from milo_core.llm.gemma import GemmaLocalModel
 from milo_core.plugin_manager import PluginManager
 from milo_core.voice.conversation import converse
-from milo_core.voice.engines import WhisperSTT, PiperTTS
+from milo_core.voice.engines import WhisperSTT, CoquiTTS
 from milo_core.gui import run_gui
 
 
@@ -45,7 +45,7 @@ def run(args: argparse.Namespace) -> None:
         vad_threshold=args.vad_threshold,
         vad_silence_duration=args.vad_silence_duration,
     )
-    tts = PiperTTS("./piper-voice.onnx")
+    tts = CoquiTTS("./coqui-voice.pth", "./config.json")
 
     from milo_core.memory_manager import MemoryManager
 
