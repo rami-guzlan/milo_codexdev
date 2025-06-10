@@ -87,7 +87,7 @@ Next, download a pre-trained voice for the text-to-speech engine. The applicatio
 
 ```bash
 # Example using a Coqui TTS model
-wget https://huggingface.co/coqui/XTTS-v2/resolve/main/model.pth?download=true -O ./coqui-voice.pth
+wget https://huggingface.co/coqui/XTTS-v2/resolve/main/model.pth?download=true -O ./model.pth
 wget https://huggingface.co/coqui/XTTS-v2/resolve/main/config.json?download=true -O ./config.json
 ```
 

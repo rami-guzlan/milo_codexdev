@@ -45,7 +45,7 @@ def run(args: argparse.Namespace) -> None:
         vad_threshold=args.vad_threshold,
         vad_silence_duration=args.vad_silence_duration,
     )
-    tts = CoquiTTS("./coqui-voice.pth", "./config.json")
+    tts = CoquiTTS("./model.pth", "./config.json")
 
     from milo_core.memory_manager import MemoryManager
 
