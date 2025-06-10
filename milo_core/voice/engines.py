@@ -99,6 +99,15 @@ class CoquiTTS(TextToSpeech):
     def __init__(self, model_path: str, config_path: str | None = None) -> None:
         try:
             from TTS.api import TTS
+            from TTS.tts.configs.xtts_config import XttsConfig
+            from torch.serialization import add_safe_globals
+
+            # Allow loading checkpoints that reference the XTTS config class
+            # when using newer PyTorch versions with weights-only load.
+            try:  # pragma: no cover - torch may be missing in tests
+                add_safe_globals([XttsConfig])
+            except Exception:
+                pass
         except ModuleNotFoundError as exc:  # pragma: no cover - optional library
             raise ImportError("TTS library is required for CoquiTTS") from exc
 
