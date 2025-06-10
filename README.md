@@ -58,7 +58,7 @@ This project uses Poetry to manage its Python packages. Install them with a sing
 poetry install
 ```
 
-This will create a virtual environment and install all necessary libraries like faster-whisper, piper-tts, and llama-cpp-python.
+This will create a virtual environment and install all necessary libraries like faster-whisper, Coqui TTS, and llama-cpp-python.
 
 ### 3. Model Setup
 MILO requires a local language model and a text-to-speech (TTS) voice model to function.
@@ -83,11 +83,12 @@ Run the provided script to download the quantized Gemma model. This will save it
 
 **C. Download the TTS Voice Model**
 
-Next, download the pre-trained voice for the text-to-speech engine. The application expects this file to be in the root directory.
+Next, download a pre-trained voice for the text-to-speech engine. The application expects the model files in the project root.
 
 ```bash
-# Download the Piper TTS voice model
-wget '[https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true](https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx?download=true)' -O ./piper-voice.onnx
+# Example using a Coqui TTS model
+wget https://huggingface.co/coqui/XTTS-v2/resolve/main/model.pth?download=true -O ./coqui-voice.pth
+wget https://huggingface.co/coqui/XTTS-v2/resolve/main/config.json?download=true -O ./config.json
 ```
 
 ### 4. Running MILO
