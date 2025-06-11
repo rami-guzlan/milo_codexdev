@@ -13,7 +13,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the MILO voice assistant")
     parser.add_argument(
         "--model-dir",
-        default="models/gemma-3-4b-it",
+        default="models/gemma-3-4b-it/gemma-2-9b-it-Q4_K_M.gguf",
         help="Path to the local model directory",
     )
     parser.add_argument(
