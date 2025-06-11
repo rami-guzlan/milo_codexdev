@@ -8,7 +8,7 @@ from milo_core.main import main
 @patch("milo_core.main.converse")
 @patch("milo_core.main.GemmaLocalModel")
 @patch("milo_core.main.WhisperSTT")
-@patch("milo_core.main.CoquiTTS")
+@patch("milo_core.main.Pyttsx3TTS")
 @patch("milo_core.main.PluginManager")
 @patch("milo_core.memory_manager.MemoryManager")
 def test_main_starts_conversation(

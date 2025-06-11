@@ -4,7 +4,7 @@ from typing import List
 from milo_core.llm.gemma import GemmaLocalModel
 from milo_core.plugin_manager import PluginManager
 from milo_core.voice.conversation import converse
-from milo_core.voice.engines import WhisperSTT, CoquiTTS
+from milo_core.voice.engines import WhisperSTT, Pyttsx3TTS
 from milo_core.gui import run_gui
 
 
@@ -15,12 +15,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--model-dir",
         default="models/gemma-3-4b-it",
         help="Path to the local model directory",
-    )
-    parser.add_argument(
-        "--vad-threshold",
-        type=float,
-        default=0.5,
-        help="Speech probability threshold for voice activity detection",
     )
     parser.add_argument(
         "--vad-silence-duration",
@@ -41,11 +35,8 @@ def run(args: argparse.Namespace) -> None:
     model = GemmaLocalModel(args.model_dir)
     model.load_model()
 
-    stt = WhisperSTT(
-        vad_threshold=args.vad_threshold,
-        vad_silence_duration=args.vad_silence_duration,
-    )
-    tts = CoquiTTS("./model.pth", "./config.json")
+    stt = WhisperSTT(vad_silence_duration=args.vad_silence_duration)
+    tts = Pyttsx3TTS()
 
     from milo_core.memory_manager import MemoryManager
 
