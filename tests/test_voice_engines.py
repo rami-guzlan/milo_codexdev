@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 
-from milo_core.voice.engines import Pyttsx3TTS, WhisperSTT
+from milo_core.voice.engines import PiperTTS, WhisperSTT
 
 
 def test_whisper_stt_listen_with_vad() -> None:
@@ -18,10 +18,15 @@ def test_whisper_stt_listen_with_vad() -> None:
     silence_chunk = np.zeros(480, dtype=np.int16).tobytes()
 
     stream = MagicMock()
-    stream.read.side_effect = [speech_chunk, speech_chunk, silence_chunk, silence_chunk]
-
-    pa_instance = MagicMock()
-    pa_instance.open.return_value = stream
+    stream.read.side_effect = [
+        (speech_chunk, None),
+        (speech_chunk, None),
+        (silence_chunk, None),
+        (silence_chunk, None),
+    ]
+    stream.start.return_value = None
+    stream.stop.return_value = None
+    stream.close.return_value = None
 
     vad_instance = MagicMock()
     vad_instance.is_speech.side_effect = [True, True, False, False]
@@ -30,7 +35,7 @@ def test_whisper_stt_listen_with_vad() -> None:
 
     with (
         patch("faster_whisper.WhisperModel", return_value=mock_model),
-        patch("milo_core.voice.engines.pyaudio.PyAudio", return_value=pa_instance),
+        patch("milo_core.voice.engines.sd.RawInputStream", return_value=stream),
         patch("milo_core.voice.engines.webrtcvad.Vad", return_value=vad_instance),
         patch("milo_core.voice.engines.time.time", side_effect=time_values),
     ):
@@ -49,8 +54,17 @@ def test_whisper_stt_listen_with_vad() -> None:
     mock_model.transcribe.assert_called_once()
 
 
-def test_pyttsx3_tts_speak(monkeypatch) -> None:
-    engine = MagicMock()
+def test_piper_tts_speak(monkeypatch) -> None:
+    voice = MagicMock()
+    voice.config.sample_rate = 16000
+
+    def synthesize(text, wf):
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(16000)
+        wf.writeframes(b"\x00\x00")
+
+    voice.synthesize.side_effect = synthesize
 
     class DummyThread:
         def __init__(self, target, daemon=False):
@@ -59,12 +73,13 @@ def test_pyttsx3_tts_speak(monkeypatch) -> None:
         def start(self):
             pass
 
-    monkeypatch.setattr("pyttsx3.init", lambda: engine)
+    monkeypatch.setattr("piper.PiperVoice.load", lambda *a, **k: voice)
+    monkeypatch.setattr("sounddevice.play", lambda *a, **k: None)
+    monkeypatch.setattr("sounddevice.wait", lambda *a, **k: None)
 
     with patch("milo_core.voice.engines.threading.Thread", DummyThread):
-        tts = Pyttsx3TTS()
+        tts = PiperTTS("model")
         tts.speak(["hi"])
         tts._queue.put(None)
         tts._run()
-        engine.say.assert_called_with("hi")
-        engine.runAndWait.assert_called()
+        voice.synthesize.assert_called()

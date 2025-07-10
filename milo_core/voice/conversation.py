@@ -19,7 +19,6 @@ def converse(
     """Run a simple interactive voice conversation loop with memory."""
 
     session_memory = ShortTermMemory()
-    memory_manager.consolidate_memories()
 
     while True:
         user_input = stt.listen()
