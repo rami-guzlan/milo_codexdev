@@ -20,11 +20,18 @@ Before you begin, ensure you have the following tools installed on your system. 
 | **Node.js** | `20.x` | Recommended for n8n workflow development tools. |
 | **ffmpeg** | Latest | Required for audio playback. |
 | **Poetry** | Latest | The dependency manager for this project. |
-| **PortAudio** | - | Required by `PyAudio` on Linux systems. |
+| **PortAudio** | - | Required by `sounddevice` on Linux. Windows wheels include it. |
 
 ### 2. Installation
 
 Follow these steps to get the application running.
+
+#### Windows Quickstart
+1. Install [Python 3.11](https://www.python.org/downloads/windows/) and [Node.js 20](https://nodejs.org/).
+2. Install [Git](https://git-scm.com/download/win) which includes Git Bash.
+3. Using Git Bash, run the commands in the sections below: clone the repo, run `poetry install`, then execute `./model_download.sh`.
+4. Download a Piper voice file and adjust `config.yaml`.
+5. Start MILO with `poetry run milo-core`.
 
 **A. Clone the Repository**
 
@@ -36,7 +43,7 @@ cd MILO-Codex
 
 **B. Install System Dependencies**
 
-You need to install ffmpeg for audio processing and, on Linux, the portaudio development headers for the PyAudio library.
+You need to install `ffmpeg` for audio processing. On Linux you must also install the `portaudio` development headers for the `sounddevice` library.
 
 On Debian/Ubuntu (Linux):
 ```bash
@@ -48,7 +55,7 @@ On macOS (using Homebrew):
 brew install ffmpeg portaudio
 ```
 
-On Windows: You can install ffmpeg using a package manager like Chocolatey (`choco install ffmpeg`) or Scoop (`scoop install ffmpeg`). PortAudio is not typically required for PyAudio on Windows as wheels are pre-compiled.
+On Windows: install ffmpeg using a package manager like Chocolatey (`choco install ffmpeg`) or Scoop (`scoop install ffmpeg`). The `sounddevice` package ships with PortAudio so you don't need to install it separately.
 
 **C. Install Python Dependencies**
 
@@ -58,7 +65,7 @@ This project uses Poetry to manage its Python packages. Install them with a sing
 poetry install
 ```
 
-This will create a virtual environment and install all necessary libraries like faster-whisper, pyttsx3, and llama-cpp-python.
+This will create a virtual environment and install all necessary libraries like `faster-whisper`, `sounddevice`, and `piper-tts`.
 
 ### 3. Model Setup
 MILO requires a local language model and a text-to-speech (TTS) voice model to function.
@@ -83,7 +90,14 @@ Run the provided script to download the quantized Gemma model. This will save it
 
 **C. Text-to-Speech Setup**
 
-MILO now uses the `pyttsx3` library which relies on your system's built-in voices. No additional model download is required.
+MILO now uses [Piper TTS](https://github.com/rhasspy/piper). Download a voice file (for example `en_US-amy-low.onnx`) and place it inside a `voices/` directory. Update `config.yaml` so the `tts.voice` entry points to that file.
+
+### Configuring MILO
+Edit `config.yaml` to adjust paths or audio settings. You can supply a custom configuration file to the command:
+
+```bash
+poetry run milo-core path/to/config.yaml
+```
 
 ### 4. Running MILO
 Once all dependencies and models are in place, you can start the assistant with the following command:
