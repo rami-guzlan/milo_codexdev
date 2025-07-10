@@ -13,9 +13,9 @@ from .memory import Message
 class MemoryManager:
     """Manage long-term memories using a local vector store."""
 
-    def __init__(self, llm_instance) -> None:
+    def __init__(self, llm_instance, db_path: str = "./milo_memory_db") -> None:
         self.llm = llm_instance
-        self.db_client = chromadb.PersistentClient(path="./milo_memory_db")
+        self.db_client = chromadb.PersistentClient(path=db_path)
         self.collection = self.db_client.get_or_create_collection(
             name="long_term_memory"
         )

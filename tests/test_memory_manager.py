@@ -17,7 +17,7 @@ def setup_manager() -> tuple[MemoryManager, MagicMock, MagicMock]:
     ):
         with patch("sentence_transformers.SentenceTransformer") as mock_model:
             mock_model.return_value.encode.return_value = [0.1, 0.2]
-            manager = MemoryManager(mock_llm)
+            manager = MemoryManager(mock_llm, db_path="./milo_memory_db")
     return manager, mock_collection, mock_llm
 
 

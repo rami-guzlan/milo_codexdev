@@ -6,7 +6,8 @@ import time
 from typing import Iterable
 
 import numpy as np
-import pyaudio
+import sounddevice as sd
+import wave
 import webrtcvad
 
 from .interface import SpeechToText, TextToSpeech
@@ -36,15 +37,13 @@ class WhisperSTT(SpeechToText):
         self.vad = webrtcvad.Vad(vad_mode)
 
     def listen(self) -> str:
-        pa = pyaudio.PyAudio()
-        stream = pa.open(
-            format=pyaudio.paInt16,
+        stream = sd.RawInputStream(
+            samplerate=self.sample_rate,
+            blocksize=self.block_size,
             channels=1,
-            rate=self.sample_rate,
-            input=True,
-            frames_per_buffer=self.block_size,
-            input_device_index=None,
+            dtype="int16",
         )
+        stream.start()
 
         audio_chunks: list[bytes] = []
         silence_start: float | None = None
@@ -52,7 +51,7 @@ class WhisperSTT(SpeechToText):
 
         try:
             while True:
-                data = stream.read(self.block_size, exception_on_overflow=False)
+                data, _ = stream.read(self.block_size)
                 is_speech = self.vad.is_speech(data, self.sample_rate)
                 if is_speech:
                     speech_detected = True
@@ -64,9 +63,8 @@ class WhisperSTT(SpeechToText):
                     elif time.time() - silence_start >= self.vad_silence_duration:
                         break
         finally:
-            stream.stop_stream()
+            stream.stop()
             stream.close()
-            pa.terminate()
 
         if not audio_chunks:
             return ""
@@ -77,17 +75,20 @@ class WhisperSTT(SpeechToText):
         return "".join(segment.text for segment in segments).strip()
 
 
-class Pyttsx3TTS(TextToSpeech):
-    """Text to speech engine using ``pyttsx3``."""
+class PiperTTS(TextToSpeech):
+    """Text to speech engine using ``piper-tts`` and ``sounddevice``."""
 
-    def __init__(self) -> None:
-        import pyttsx3
+    def __init__(self, model_path: str) -> None:
+        from io import BytesIO
+        from piper import PiperVoice
 
-        self.engine = pyttsx3.init()
+        self.voice = PiperVoice.load(model_path)
+        self.sample_rate = self.voice.config.sample_rate
         self._queue: queue.Queue[str] = queue.Queue()
         self._stop_event = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
+        self._buffer_cls = BytesIO
 
     def _run(self) -> None:
         while True:
@@ -95,15 +96,21 @@ class Pyttsx3TTS(TextToSpeech):
             if text is None:  # type: ignore[comparison-overlap]
                 break
             if not self._stop_event.is_set():
-                self.engine.say(text)
-                self.engine.runAndWait()
+                buf = self._buffer_cls()
+                with wave.open(buf, "wb") as wf:
+                    self.voice.synthesize(text, wf)
+                audio = (
+                    np.frombuffer(buf.getvalue(), dtype=np.int16).astype(np.float32)
+                    / 32768.0
+                )
+                sd.play(audio, self.sample_rate)
+                sd.wait()
             self._queue.task_done()
             self._stop_event.clear()
 
     def speak(self, tokens: Iterable[str]) -> None:
-        text = "".join(tokens)
-        self._queue.put(text)
+        self._queue.put("".join(tokens))
 
     def stop(self) -> None:
-        self.engine.stop()
+        sd.stop()
         self._stop_event.set()

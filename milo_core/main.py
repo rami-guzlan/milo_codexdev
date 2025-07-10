@@ -1,65 +1,57 @@
-import argparse
-from typing import List
+from __future__ import annotations
 
-from milo_core.llm.gemma import GemmaLocalModel
+from typing import Any, Dict
+
+from milo_core.config import load_config
+from milo_core.llm import HuggingFaceModel
 from milo_core.plugin_manager import PluginManager
 from milo_core.voice.conversation import converse
-from milo_core.voice.engines import WhisperSTT, Pyttsx3TTS
+from milo_core.voice.engines import WhisperSTT, PiperTTS
 from milo_core.gui import run_gui
 
-
-def build_parser() -> argparse.ArgumentParser:
-    """Create and return the CLI argument parser."""
-    parser = argparse.ArgumentParser(description="Run the MILO voice assistant")
-    parser.add_argument(
-        "--model-dir",
-        default="models/gemma-3-4b-it/gemma-2-9b-it-Q4_K_M.gguf",
-        help="Path to the local model directory",
-    )
-    parser.add_argument(
-        "--vad-silence-duration",
-        type=float,
-        default=0.8,
-        help="Seconds of silence that mark the end of an utterance",
-    )
-    parser.add_argument(
-        "--no-gui",
-        action="store_true",
-        help="Run without the graphical interface",
-    )
-    return parser
+from milo_core.memory_manager import MemoryManager
 
 
-def run(args: argparse.Namespace) -> None:
+def run(config: Dict[str, Any]) -> None:
     """Initialize components and start the conversation loop."""
-    model = GemmaLocalModel(args.model_dir)
+    model = HuggingFaceModel(config["llm"]["model"])
     model.load_model()
 
-    stt = WhisperSTT(vad_silence_duration=args.vad_silence_duration)
-    tts = Pyttsx3TTS()
+    stt_cfg = config.get("stt", {})
+    stt = WhisperSTT(
+        model=stt_cfg.get("model", "base"),
+        sample_rate=stt_cfg.get("sample_rate", 16_000),
+        block_size=stt_cfg.get("block_size", 480),
+        vad_silence_duration=stt_cfg.get("vad_silence_duration", 0.8),
+        vad_mode=stt_cfg.get("vad_mode", 2),
+    )
 
-    from milo_core.memory_manager import MemoryManager
+    tts_cfg = config.get("tts", {})
+    tts = PiperTTS(tts_cfg.get("voice", ""))
 
-    memory_manager = MemoryManager(model)
+    memory_cfg = config.get("memory", {})
+    memory_manager = MemoryManager(
+        model, db_path=memory_cfg.get("db_path", "./milo_memory_db")
+    )
+    memory_manager.consolidate_memories()
 
     pm = PluginManager()
     pm.discover_plugins()
 
     try:
-        if args.no_gui:
+        if not config.get("gui", {}).get("enabled", True):
             converse(model, stt, tts, memory_manager)
         else:
             run_gui(model, stt, tts, memory_manager)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt:  # pragma: no cover - allow graceful exit
         pass
     finally:
         model.unload()
 
 
-def main(argv: List[str] | None = None) -> None:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-    run(args)
+def main(config_path: str | None = None) -> None:
+    config = load_config(config_path) if config_path else load_config()
+    run(config)
 
 
 if __name__ == "__main__":  # pragma: no cover - entry point

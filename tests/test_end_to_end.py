@@ -36,17 +36,28 @@ def test_end_to_end_skill_execution() -> None:
         tts_arg.speak([result])
 
     with (
-        patch("milo_core.main.GemmaLocalModel", return_value=model),
+        patch("milo_core.main.HuggingFaceModel", return_value=model),
         patch("milo_core.main.WhisperSTT", return_value=stt),
-        patch("milo_core.main.Pyttsx3TTS", return_value=tts),
+        patch("milo_core.main.PiperTTS", return_value=tts),
+        patch("milo_core.main.run_gui"),
         patch("milo_core.main.PluginManager", return_value=plugin_manager),
-        patch("milo_core.memory_manager.MemoryManager", return_value=memory_manager),
+        patch("milo_core.main.MemoryManager", return_value=memory_manager),
         patch("milo_core.main.converse", side_effect=fake_converse),
         patch(
             "milo_core.commands.execute_command", wraps=commands.execute_command
         ) as exec_mock,
+        patch(
+            "milo_core.main.load_config",
+            return_value={
+                "llm": {"model": "m"},
+                "gui": {"enabled": False},
+                "stt": {},
+                "tts": {"voice": "v"},
+                "memory": {},
+            },
+        ),
     ):
-        main(["--no-gui"])
+        main()
         exec_mock.assert_called_once_with(
             {"type": "skill", "name": "test"}, plugin_manager
         )

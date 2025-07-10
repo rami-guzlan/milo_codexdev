@@ -9,13 +9,16 @@ readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "requests (>=2.32.3,<3.0.0)",
-    "llama-cpp-python (>=0.2.71,<0.3.0)",
     "faster-whisper (>=1.1.1,<1.2.0)",
     "chromadb (>=1.0.12,<2.0.0)",
     "sentence-transformers (>=4.1.0,<5.0.0)",
-    "pyttsx3 (>=2.90,<3.0.0)",
-    "pyaudio (>=0.2.14,<0.3.0)",
-    "webrtcvad-wheels (>=2.0.14,<3.0.0)"
+    "webrtcvad-wheels (>=2.0.14,<3.0.0)",
+    "sounddevice (>=0.5.2,<0.6.0)",
+    "piper-tts (>=1.2.0,<2.0.0)",
+    "transformers (>=4.53.1,<5.0.0)",
+    "accelerate (>=1.8.1,<2.0.0)",
+    "bitsandbytes (>=0.46.1,<0.47.0)",
+    "pyyaml (>=6.0.2,<7.0.0)"
 ]
 
 [project.scripts]
@@ -34,12 +37,9 @@ packages = [{include = "milo_core"}] # This tells Poetry your package code is in
 python = ">=3.11,<3.12" # Should match [project].requires-python
 # Main dependencies will also be reflected here by 'poetry add'
 requests = ">=2.32.3,<3.0.0"
-llama-cpp-python = ">=0.2.71,<0.3.0"
 faster-whisper = ">=1.1.1,<1.2.0"
 chromadb = ">=1.0.12,<2.0.0"
 sentence-transformers = ">=4.1.0,<5.0.0"
-pyttsx3 = ">=2.90,<3.0.0"
-pyaudio = ">=0.2.14,<0.3.0"
 webrtcvad-wheels = ">=2.0.14,<3.0.0"
 
 [tool.poetry.group.dev.dependencies]

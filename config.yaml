@@ -1,0 +1,12 @@
+llm:
+  model: models/gemma-3-4b-it/gemma-2-9b-it-Q4_K_M.gguf
+stt:
+  model: base
+  sample_rate: 16000
+  block_size: 480
+  vad_silence_duration: 0.8
+  vad_mode: 2
+tts:
+  voice: voices/en_US-amy-low
+memory:
+  db_path: ./milo_memory_db
