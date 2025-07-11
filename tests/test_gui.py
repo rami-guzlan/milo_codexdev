@@ -7,7 +7,6 @@ import pytest
 from milo_core.gui import app
 from milo_core.gui.app import run_gui
 
-
 class DummyGUI:
     def __init__(self, on_end):
         DummyGUI.instance = self
@@ -19,6 +18,7 @@ class DummyGUI:
 
     def add_message(self, author, msg):
         self.messages.append((author, msg))
+
 
     def mainloop(self):
         self.cb("hello")
