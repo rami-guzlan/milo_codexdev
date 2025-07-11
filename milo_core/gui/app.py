@@ -1,101 +1,103 @@
 from __future__ import annotations
 
-import random
-from typing import Iterable
+from typing import Callable
 import threading
-from tkinter import Tk, Canvas, Label, Button
+from tkinter import (
+    Tk,
+    Text,
+    Entry,
+    Button,
+    Scrollbar,
+    Frame,
+    END,
+)
 
-from milo_core.memory import ShortTermMemory
 from milo_core.llm import LocalModelInterface
+from milo_core.memory import ShortTermMemory
 from milo_core.memory_manager import MemoryManager
 from milo_core.voice.interface import SpeechToText, TextToSpeech
 
 
 class MiloGUI:
-    """Simple Tkinter interface for MILO."""
+    """Simple text-based chat interface for MILO."""
 
-    def __init__(self, on_end: callable) -> None:
+    def __init__(self, on_end: Callable[[], None]) -> None:
         self.root = Tk()
         self.root.title("MILO")
+        self.root.geometry("600x600")
         self.on_end = on_end
 
-        self.status = Label(self.root, text="Listening", font=("Helvetica", 16))
-        self.status.pack(pady=10)
-
-        self.canvas = Canvas(
-            self.root, width=200, height=100, bg="black", highlightthickness=0
+        self.text_area = Text(
+            self.root,
+            state="disabled",
+            wrap="word",
+            font=("Helvetica", 12),
+            bg="#f8f8f8",
         )
-        self.canvas.pack()
+        self.scrollbar = Scrollbar(self.root, command=self.text_area.yview)
+        self.text_area.configure(yscrollcommand=self.scrollbar.set)
+        self.text_area.tag_config("user", foreground="#1565c0", spacing3=5)
+        self.text_area.tag_config("assistant", foreground="#6a1b9a", spacing3=5)
+        self.text_area.pack(side="top", fill="both", expand=True)
+        self.scrollbar.pack(side="right", fill="y")
 
-        self.end_button = Button(self.root, text="End Session", command=self._end)
-        self.end_button.pack(pady=10)
+        bottom = Frame(self.root)
+        bottom.pack(side="bottom", fill="x")
 
-        self._wave = True
-        self.left_eye: int | None = None
-        self.right_eye: int | None = None
+        self.entry = Entry(bottom, font=("Helvetica", 12))
+        self.entry.pack(side="left", fill="x", expand=True, padx=5, pady=5)
+        self.entry.bind("<Return>", self._handle_send)
+
+        self.send_button = Button(bottom, text="Send", command=self._handle_send)
+        self.send_button.pack(side="right", padx=5, pady=5)
+
+        self.end_button = Button(bottom, text="End Session", command=self._end)
+        self.end_button.pack(side="right", padx=5, pady=5)
+
+        self._send_callback: Callable[[str], None] | None = None
+        self._msg_counter = 0
+
+    def set_send_callback(self, callback: Callable[[str], None]) -> None:
+        """Register the function to call when the user sends a message."""
+
+        self._send_callback = callback
+
+    def _handle_send(self, event: object | None = None) -> None:
+        if not self._send_callback:
+            return
+        text = self.entry.get().strip()
+        if not text:
+            return
+        self.entry.delete(0, END)
+        self._send_callback(text)
+
+    def add_message(self, author: str, message: str) -> str:
+        """Display a message in the chat history and return its start index."""
+
+        tag = "user" if author == "You" else "assistant"
+        self.text_area.configure(state="normal")
+        start = self.text_area.index(END)
+        self.text_area.insert(END, f"{author}: {message}\n", tag)
+        self.text_area.configure(state="disabled")
+        self.text_area.see(END)
+        return start
+
+    def update_message(self, index: str, author: str, message: str) -> None:
+        """Replace the content of a previously added message."""
+
+        tag = "user" if author == "You" else "assistant"
+        self.text_area.configure(state="normal")
+        self.text_area.delete(index, f"{index} lineend")
+        self.text_area.insert(index, f"{author}: {message}", tag)
+        self.text_area.configure(state="disabled")
+        self.text_area.see(END)
 
     def _end(self) -> None:
         self.on_end()
         self.root.quit()
 
-    def start_listening(self) -> None:
-        self.status.config(text="Listening")
-        self._wave = True
-        self.canvas.delete("all")
-        self._animate()
-
-    def show_eyes(self) -> None:
-        self._wave = False
-        self.canvas.delete("all")
-        width = 200
-        height = 100
-        eye_w = 30
-        eye_h = 20
-        self.left_eye = self.canvas.create_oval(
-            width / 2 - 40 - eye_w / 2,
-            height / 2 - eye_h / 2,
-            width / 2 - 40 + eye_w / 2,
-            height / 2 + eye_h / 2,
-            fill="#add8e6",
-        )
-        self.right_eye = self.canvas.create_oval(
-            width / 2 + 40 - eye_w / 2,
-            height / 2 - eye_h / 2,
-            width / 2 + 40 + eye_w / 2,
-            height / 2 + eye_h / 2,
-            fill="#add8e6",
-        )
-        self._move_eyes()
-
-    def _move_eyes(self) -> None:
-        if self._wave:
-            return
-        if self.left_eye is None or self.right_eye is None:
-            return
-        for eye in (self.left_eye, self.right_eye):
-            dx = random.randint(-2, 2)
-            dy = random.randint(-1, 1)
-            self.canvas.move(eye, dx, dy)
-        self.root.after(300, self._move_eyes)
-
-    def _animate(self) -> None:
-        if not self._wave:
-            return
-        self.canvas.delete("all")
-        width = 200
-        height = 100
-        bars = 20
-        bar_width = width / bars
-        for i in range(bars):
-            bar_height = random.randint(10, height)
-            x0 = i * bar_width
-            x1 = x0 + bar_width - 2
-            self.canvas.create_rectangle(
-                x0, height - bar_height, x1, height, fill="cyan"
-            )
-        self.root.after(100, self._animate)
-
     def mainloop(self) -> None:
+        self.entry.focus()
         self.root.mainloop()
 
 
@@ -105,69 +107,42 @@ def run_gui(
     tts: TextToSpeech,
     memory_manager: MemoryManager,
 ) -> None:
-    """Run MILO conversation loop with a GUI."""
+    """Run MILO conversation loop with a text-based GUI."""
 
-    stop_event = threading.Event()
-    gui = MiloGUI(stop_event.set)
+    session_memory = ShortTermMemory()
+    memory_manager.consolidate_memories()
 
-    def worker() -> None:
-        session_memory = ShortTermMemory()
-        memory_manager.consolidate_memories()
-        while not stop_event.is_set():
-            gui.start_listening()
-            user_input = stt.listen()
-            if stop_event.is_set():
-                break
-            if not user_input:
-                continue
-            relevant_memories = memory_manager.retrieve_relevant_memories(user_input)
-            if relevant_memories:
-                context_str = " ".join(relevant_memories)
+    gui = MiloGUI(lambda: None)
+
+    def process_input(user_input: str) -> None:
+        gui.add_message("You", user_input)
+        placeholder = gui.add_message("M.I.L.O", "…")
+
+        def worker() -> None:
+            relevant = memory_manager.retrieve_relevant_memories(user_input)
+            if relevant:
+                context_str = " ".join(relevant)
                 session_memory.add_message(
                     "system", f"Here is some relevant context: {context_str}"
                 )
             session_memory.add_message("user", user_input)
-            assistant_response_full: list[str] = []
+            history = session_memory.get_messages()
+            assistant_tokens = model.stream_response(history)
+            assistant_response = "".join(assistant_tokens)
+            session_memory.add_message("assistant", assistant_response)
 
-            def generate() -> Iterable[str]:
-                history = session_memory.get_messages()
-                for token in model.stream_response(history):
-                    if stop_event.is_set():
-                        break
-                    assistant_response_full.append(token)
-                    yield token
-
-            def listen_interrupt() -> None:
-                stt.listen()
-                stop_event.set()
-                tts.stop()
-
-            listener = threading.Thread(target=listen_interrupt, daemon=True)
-            listener.start()
-            gui.show_eyes()
-            tts.speak(generate())
-            listener.join()
-
-            if stop_event.is_set() and assistant_response_full:
-                interrupted = "".join(assistant_response_full)
-                session_memory.add_message(
-                    "assistant",
-                    f"<interrupted_thought>{interrupted}</interrupted_thought>",
-                )
-            elif assistant_response_full:
-                session_memory.add_message(
-                    "assistant", "".join(assistant_response_full)
-                )
+            gui.root.after(
+                0,
+                lambda: gui.update_message(placeholder, "M.I.L.O", assistant_response),
+            )
 
             if user_input.lower() == "goodbye":
                 memory_manager.summarize_and_store_session(
                     session_memory.get_messages()
                 )
                 session_memory.clear()
-        gui.root.quit()
 
-    thread = threading.Thread(target=worker, daemon=True)
-    thread.start()
+        threading.Thread(target=worker, daemon=True).start()
+
+    gui.set_send_callback(process_input)
     gui.mainloop()
-    stop_event.set()
-    thread.join()
