@@ -7,15 +7,11 @@ import pytest
 from milo_core.gui import app
 from milo_core.gui.app import run_gui
 
-
 class DummyGUI:
     def __init__(self, on_end):
         DummyGUI.instance = self
         self.on_end = on_end
         self.messages: list[tuple[str, str]] = []
-        self.stream_tokens: list[list[str]] = []
-        self.root = MagicMock()
-        self.root.after = lambda delay, func: func()
 
     def set_send_callback(self, cb):
         self.cb = cb
@@ -23,16 +19,6 @@ class DummyGUI:
     def add_message(self, author, msg):
         self.messages.append((author, msg))
 
-    def start_stream_message(self, author):
-        self.current_author = author
-        self.stream_tokens.append([])
-
-    def append_stream_token(self, token):
-        self.stream_tokens[-1].append(token)
-
-    def end_stream_message(self):
-        text = "".join(self.stream_tokens.pop())
-        self.messages.append((self.current_author, text))
 
     def mainloop(self):
         self.cb("hello")
