@@ -1,0 +1,6 @@
+# Ignore directories
+models/
+
+# Ignore file extensions
+*.gguf
+*.safetensors
