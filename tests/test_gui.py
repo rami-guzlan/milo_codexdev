@@ -7,11 +7,14 @@ import pytest
 from milo_core.gui import app
 from milo_core.gui.app import run_gui
 
+
 class DummyGUI:
     def __init__(self, on_end):
         DummyGUI.instance = self
         self.on_end = on_end
         self.messages: list[tuple[str, str]] = []
+        self._stream_author = ""
+        self._buffer = ""
 
     def set_send_callback(self, cb):
         self.cb = cb
@@ -19,6 +22,15 @@ class DummyGUI:
     def add_message(self, author, msg):
         self.messages.append((author, msg))
 
+    def start_stream_message(self, author):
+        self._stream_author = author
+        self._buffer = ""
+
+    def append_stream_token(self, token):
+        self._buffer += token
+
+    def end_stream_message(self):
+        self.messages.append((self._stream_author, self._buffer))
 
     def mainloop(self):
         self.cb("hello")
