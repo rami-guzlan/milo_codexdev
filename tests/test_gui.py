@@ -8,6 +8,14 @@ from milo_core.gui import app
 from milo_core.gui.app import run_gui
 
 
+class DummyThread:
+    def __init__(self, target, daemon=False):
+        self.target = target
+
+    def start(self) -> None:
+        self.target()
+
+
 class DummyGUI:
     def __init__(self, on_end):
         DummyGUI.instance = self
@@ -32,6 +40,12 @@ class DummyGUI:
     def end_stream_message(self):
         self.messages.append((self._stream_author, self._buffer))
 
+    def set_loading(self, loading):
+        pass
+
+    def schedule(self, cb, delay=0):
+        cb()
+
     def mainloop(self):
         self.cb("hello")
         self.on_end()
@@ -45,6 +59,7 @@ class DummyGoodbyeGUI(DummyGUI):
 
 def test_run_gui_basic_flow(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(app, "MiloGUI", DummyGUI)
+    monkeypatch.setattr(app, "threading", MagicMock(Thread=DummyThread))
     model = MagicMock()
     model.stream_response.return_value = iter(["hi"])
     memory = MagicMock()
@@ -58,6 +73,7 @@ def test_run_gui_basic_flow(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_run_gui_summarizes_on_goodbye(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(app, "MiloGUI", DummyGoodbyeGUI)
+    monkeypatch.setattr(app, "threading", MagicMock(Thread=DummyThread))
     model = MagicMock()
     model.stream_response.return_value = iter(["bye"])
     memory = MagicMock()
