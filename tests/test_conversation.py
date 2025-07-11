@@ -59,7 +59,7 @@ def test_converse_handles_interruption(monkeypatch: pytest.MonkeyPatch) -> None:
     memory_manager = MagicMock()
 
     with pytest.raises(KeyboardInterrupt):
-        conversation.converse(model, stt, tts, memory_manager)
+        conversation.converse(model, stt, tts, memory_manager, MagicMock())
 
     assert len(consumed) < 3
     tts.stop.assert_called_once()

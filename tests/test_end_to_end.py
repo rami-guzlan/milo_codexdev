@@ -28,11 +28,11 @@ def test_end_to_end_skill_execution() -> None:
 
     memory_manager = MagicMock()
 
-    def fake_converse(model_arg, stt_arg, tts_arg, mem_arg):
+    def fake_converse(model_arg, stt_arg, tts_arg, mem_arg, pm_arg):
         stt_arg.listen()
         tokens = list(model_arg.stream_response([]))
         command_dict = eval(tokens[0])
-        result = commands.execute_command(command_dict, plugin_manager)
+        result = commands.execute_command(command_dict, pm_arg)
         tts_arg.speak([result])
 
     with (

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Callable
 
+import json
+
 import queue
 import threading
 
@@ -21,6 +23,8 @@ from milo_core.llm import LocalModelInterface
 from milo_core.memory import ShortTermMemory
 from milo_core.memory_manager import MemoryManager
 from milo_core.voice.interface import SpeechToText, TextToSpeech
+from milo_core.commands import execute_command, CommandError
+from milo_core.plugin_manager import PluginManager
 
 
 class MiloGUI:
@@ -147,6 +151,7 @@ def run_gui(
     stt: SpeechToText,
     tts: TextToSpeech,
     memory_manager: MemoryManager,
+    plugin_manager: PluginManager | None = None,
 ) -> None:
     """Run MILO conversation loop with a text-based GUI."""
 
@@ -189,6 +194,20 @@ def run_gui(
                         gui.end_stream_message()
                         full_msg = "".join(tokens)
                         session_memory.add_message("assistant", full_msg)
+                        if plugin_manager:
+                            try:
+                                command = json.loads(full_msg)
+                            except json.JSONDecodeError:
+                                pass
+                            else:
+                                try:
+                                    result = execute_command(command, plugin_manager)
+                                except (
+                                    CommandError
+                                ) as exc:  # pragma: no cover - defensive
+                                    result = str(exc)
+                                gui.add_message("M.I.L.O", str(result))
+                                session_memory.add_message("assistant", str(result))
                         if user_input.lower() == "goodbye":
                             memory_manager.summarize_and_store_session(
                                 session_memory.get_messages()
