@@ -98,6 +98,9 @@ class PiperTTS(TextToSpeech):
             if not self._stop_event.is_set():
                 buf = self._buffer_cls()
                 with wave.open(buf, "wb") as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(2) # 2 bytes for 16-bit audio
+                    wf.setframerate(self.sample_rate)
                     self.voice.synthesize(text, wf)
                 audio = (
                     np.frombuffer(buf.getvalue(), dtype=np.int16).astype(np.float32)

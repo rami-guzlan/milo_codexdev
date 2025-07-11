@@ -4,3 +4,4 @@ models/
 # Ignore file extensions
 *.gguf
 *.safetensors
+*.onnx

@@ -59,7 +59,7 @@ class MemoryManager:
     def consolidate_memories(self) -> None:
         """Consolidate older memories into weekly digests."""
         now = datetime.now(timezone.utc)
-        records = self.collection.get(include=["documents", "metadatas", "ids"])
+        records = self.collection.get(include=["documents", "metadatas"])
         if not records:
             return
 

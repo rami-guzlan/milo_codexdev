@@ -23,7 +23,7 @@ class HuggingFaceModel(LocalModelInterface):
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             device_map="auto",
-            torch_dtype=torch.float16,
+            torch_dtype=torch.bfloat16,
         )
 
     def load_model(self) -> None:
