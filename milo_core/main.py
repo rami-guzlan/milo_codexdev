@@ -40,9 +40,9 @@ def run(config: Dict[str, Any]) -> None:
 
     try:
         if not config.get("gui", {}).get("enabled", True):
-            converse(model, stt, tts, memory_manager)
+            converse(model, stt, tts, memory_manager, pm)
         else:
-            run_gui(model, stt, tts, memory_manager)
+            run_gui(model, stt, tts, memory_manager, pm)
     except KeyboardInterrupt:  # pragma: no cover - allow graceful exit
         pass
     finally:

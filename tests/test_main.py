@@ -35,5 +35,11 @@ def test_main_starts_conversation(
     mock_model.return_value.load_model.assert_called_once()
     mock_pm.return_value.discover_plugins.assert_called_once()
     mock_memory.assert_called_with(mock_model.return_value, db_path="./milo_memory_db")
-    mock_converse.assert_called_once()
+    mock_converse.assert_called_once_with(
+        mock_model.return_value,
+        mock_stt.return_value,
+        mock_tts.return_value,
+        mock_memory.return_value,
+        mock_pm.return_value,
+    )
     mock_run_gui.assert_not_called()

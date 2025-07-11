@@ -65,7 +65,7 @@ def test_run_gui_basic_flow(monkeypatch: pytest.MonkeyPatch) -> None:
     memory = MagicMock()
     memory.retrieve_relevant_memories.return_value = []
     memory.consolidate_memories.return_value = None
-    run_gui(model, None, None, memory)
+    run_gui(model, None, None, memory, MagicMock())
     assert ("You", "hello") in DummyGUI.instance.messages
     assert ("M.I.L.O", "hi") in DummyGUI.instance.messages
     memory.consolidate_memories.assert_called_once()
@@ -79,5 +79,5 @@ def test_run_gui_summarizes_on_goodbye(monkeypatch: pytest.MonkeyPatch) -> None:
     memory = MagicMock()
     memory.retrieve_relevant_memories.return_value = []
     memory.consolidate_memories.return_value = None
-    run_gui(model, None, None, memory)
+    run_gui(model, None, None, memory, MagicMock())
     memory.summarize_and_store_session.assert_called_once()
