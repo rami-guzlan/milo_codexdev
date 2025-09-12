@@ -1,0 +1,1 @@
+"""Offline transcription using Vosk."""
